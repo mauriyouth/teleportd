@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 
 //ItemizedOverlay manage a whole set of Overlay
-public class Marker extends ItemizedOverlay {
+public class Marker extends ItemizedOverlay<OverlayItem> {
 	private Context con;
 	
 	private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
@@ -53,6 +54,17 @@ public class Marker extends ItemizedOverlay {
 	  dialog.show();
 	  return true;
 	}
+	
+	public class TeleportdAPIParser extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
 	
 
 }
