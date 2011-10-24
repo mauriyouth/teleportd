@@ -43,7 +43,7 @@ public class Marker extends ItemizedOverlay<OverlayItem> {
 	    populate();
 	}
 	
-	@Override
+/*	@Override
 	protected boolean onTap(int index) {
 	  OverlayItem item = mOverlays.get(index);
 	  AlertDialog.Builder dialog = new AlertDialog.Builder(con);
@@ -51,5 +51,5 @@ public class Marker extends ItemizedOverlay<OverlayItem> {
 	  dialog.setMessage(item.getSnippet());
 	  dialog.show();
 	  return true;
-	}
+	}*/
 }

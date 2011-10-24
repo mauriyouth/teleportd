@@ -4,5 +4,6 @@
     <string name="hello">Hello World, TeleportdActivity!</string>
     <string name="app_name">Teleportd</string>
     <string name="mapkey">0H9BEBPE6XxAAe3wOT2kTvaicqErJMOlDgxhJfA</string>
+    <string name="teleportdAPIKey">1c5a31ccf46cd172e604e103c97239bd</string>
 
 </resources>

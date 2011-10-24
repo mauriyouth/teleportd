@@ -10,44 +10,58 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 import android.graphics.drawable.Drawable;
+import android.location.Criteria;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.widget.GridView;
 
 public class TeleportdActivity extends MapActivity {
     /** Called when the activity is first created. */
 	MapView mapView;
+	GridView gridview;
 	MapController mc;
 	GeoPoint point; //user actual coordinate
 	LocationManager lm;
 	TeleportdAPIParser tp;
+	String bestProvider;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
         mapView = (MapView) findViewById(R.id.mapView);
+        gridview = (GridView) findViewById(R.id.gridView);
+        Drawable drawable = this.getResources().getDrawable(R.drawable.ic_launcher); // overlay icon
+        
         mc = mapView.getController();
         lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        
-       /* String coordinates[] = {"1.352566007", "103.78921587"};
-        double lat = Double.parseDouble(coordinates[0]);
-        double lng = Double.parseDouble(coordinates[1]);
- 
-        p = new GeoPoint(
-            (int) (lat * 1E6), 
-            (int) (lng * 1E6));*/
-        point = new GeoPoint(19240000,-99120000);
-        mc.animateTo(point);
-        mc.setZoom(13);
-        List<Overlay> mapOverlays = mapView.getOverlays();
-        Drawable drawable = this.getResources().getDrawable(R.drawable.ic_launcher);
-        Marker itemizedoverlay = new Marker(drawable);
-     
-        OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm in Mexico City!");
-        itemizedoverlay.addOverlay(overlayitem);
-        mapOverlays.add(itemizedoverlay);
-        mapView.invalidate();
         tp=new TeleportdAPIParser();
-        tp.execute(point);
+        
+        //Criteria criteria = new Criteria();
+		//bestProvider = lm.getBestProvider(criteria, false);
+		//Location location = lm.getLastKnownLocation(lm.GPS_PROVIDER);
+        //point = new GeoPoint((int) (location.getLatitude() * 1E6),(int) (location.getLongitude() * 1E6));
+        
+        point = new GeoPoint((int) (22.312381*1E6),(int)(114.225242*1E6));
+		mc.setCenter(point);
+        mc.setZoom(13);
+        //mc.zoomToSpan(5, 5);
+        
+        List<Overlay> mapOverlays = mapView.getOverlays();
+       
+        Marker marker = new Marker(drawable);
+        
+        OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm in Mexico City!"); // one overlayitem example 
+        
+        marker.addOverlay(overlayitem);
+        
+        mapOverlays.add(marker); // adding the whole overlays (list) on the maps
+        
+        tp.execute(point); //background task, fetch pictures and show them on the UI
+        
+        mapView.invalidate();
+       
     }
 
 	@Override
