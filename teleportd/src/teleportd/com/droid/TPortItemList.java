@@ -1,11 +1,22 @@
 package teleportd.com.droid;
 
 import com.google.api.client.util.Key;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TPortItemList {
 	
+	public TPortItemList(){
+		i=new ArrayList<TPortItem>();
+	}
+	
 	public static class TPortItem {
+		
+		public TPortItem() {
+			loc=new int[2];
+		}
+		
 		@Key String sha;
 		@Key int[] loc;
 		@Key int age;
@@ -13,6 +24,7 @@ public class TPortItemList {
 		@Key String thumb;	//Thumbnail URL (size vary with source service, generally ~100x100)	string
 		@Key String full;	//full resolution URL (size vary with source service and user hardware)	string
 		@Key int rank;		//hint on the ranking of the picture against the current query	integer
+		int grade;
 	}
 	
 	public static class TPortItemFull extends TPortItem {

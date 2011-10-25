@@ -40,12 +40,11 @@ public class TeleportdActivity extends MapActivity {
         
         //Criteria criteria = new Criteria();
 		//bestProvider = lm.getBestProvider(criteria, false);
-		//Location location = lm.getLastKnownLocation(lm.GPS_PROVIDER);
-        //point = new GeoPoint((int) (location.getLatitude() * 1E6),(int) (location.getLongitude() * 1E6));
+		//Location location = lm.getLastKnownLocation(lm.NETWORK_PROVIDER);
+       // point = new GeoPoint((int) (location.getLatitude() * 1E6),(int) (location.getLongitude() * 1E6));
         
         point = new GeoPoint((int) (22.312381*1E6),(int)(114.225242*1E6));
 		mc.setCenter(point);
-        mc.setZoom(13);
         //mc.zoomToSpan(5, 5);
         
         List<Overlay> mapOverlays = mapView.getOverlays();
@@ -59,7 +58,7 @@ public class TeleportdActivity extends MapActivity {
         mapOverlays.add(marker); // adding the whole overlays (list) on the maps
         
         tp.execute(point); //background task, fetch pictures and show them on the UI
-        
+        mapView.setBuiltInZoomControls(true);
         mapView.invalidate();
        
     }
