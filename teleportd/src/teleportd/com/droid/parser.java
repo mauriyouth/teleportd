@@ -1,12 +1,9 @@
 package teleportd.com.droid;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ListIterator;
-
+import java.net.URLEncoder;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
-import com.google.android.maps.GeoPoint;
 import com.google.api.client.extensions.android2.AndroidHttp;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.HttpRequestFactory;
@@ -18,38 +15,30 @@ import org.codehaus.jackson.JsonToken;
 import teleportd.com.droid.TPortItemList.TPortItem;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
-public class TeleportdAPIParser extends AsyncTask<GeoPoint, Void, Void> {
+
+public class parser extends AsyncTask<String, Void, Void> {
 	
 	private final HttpTransport http= AndroidHttp.newCompatibleTransport();
 	private HttpRequestFactory fact;
 	private HttpRequest request; 
 	private HttpResponse response; 
-	private URL url;
 	private String urlString;
 	private JsonFactory jsonFactory; 
 	private JsonParser jp;
 	private TPortItemList tpl;
-
-
-	GeoPoint point;
-
-
 	
 	@Override
-	protected Void doInBackground(GeoPoint... params) {
-		point=params[0];
+	protected Void doInBackground(String... params) {
+		urlString=params[0];
 		fact=http.createRequestFactory();
 		jsonFactory = new JsonFactory();
 		tpl= new TPortItemList();
 		TPortItem tpi= new TPortItem();
 		
-		
-		
-			//loc=[34.19,-119.49,5.0,5.0]
-			urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B34.19,-119.49,5.0,5.0%5D";
+			///urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B34.19,-119.49,5.0,5.0%5D";
 			try {
+				urlString=URLEncoder.encode(urlString,"UTF-8");
 				request = fact.buildGetRequest(new GenericUrl(urlString));
 				response = request.execute();
 				jp = jsonFactory.createJsonParser(response.getContent());
@@ -90,14 +79,13 @@ public class TeleportdAPIParser extends AsyncTask<GeoPoint, Void, Void> {
 								jp.nextValue().toString();
 								tpi.loc[1]=(int) (jp.getFloatValue()*1E6);
 								jp.nextValue();
+								publishProgress();
 							}
 							
 							jp.nextValue();	
 						}
 					
-					tpl.i.add(tpi);
-					
-						
+					//tpl.i.add(tpi);
 						
 	
 				}
@@ -111,6 +99,14 @@ public class TeleportdAPIParser extends AsyncTask<GeoPoint, Void, Void> {
 			}
 		
 		return null;
+	}
+
+
+
+	@Override
+	protected void onProgressUpdate(Void... values) {
+		super.onProgressUpdate(values);
+		
 	}
 
 }

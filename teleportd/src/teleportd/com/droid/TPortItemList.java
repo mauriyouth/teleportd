@@ -13,10 +13,6 @@ public class TPortItemList {
 	
 	public static class TPortItem {
 		
-		public TPortItem() {
-			loc=new int[2];
-		}
-		
 		@Key String sha;
 		@Key int[] loc;
 		@Key int age;
@@ -25,6 +21,24 @@ public class TPortItemList {
 		@Key String full;	//full resolution URL (size vary with source service and user hardware)	string
 		@Key int rank;		//hint on the ranking of the picture against the current query	integer
 		int grade;
+		
+		
+		public TPortItem() {
+			loc=new int[2];
+		}
+		
+		
+		public TPortItem(String sha, int[] loc, int age, int date,String thumb, int rank, int grade) {
+			super();
+			this.sha = sha;
+			this.loc = loc;
+			this.age = age;
+			this.date = date;
+			this.thumb = thumb;
+			this.rank = rank;
+			this.grade = grade;
+		}
+	
 	}
 	
 	public static class TPortItemFull extends TPortItem {
