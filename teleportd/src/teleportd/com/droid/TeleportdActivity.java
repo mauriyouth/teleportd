@@ -1,5 +1,6 @@
 package teleportd.com.droid;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.List;
 import org.codehaus.jackson.JsonFactory;
@@ -14,6 +15,7 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.google.api.client.extensions.android2.AndroidHttp;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
@@ -24,6 +26,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.GridView;
+import android.widget.TextView;
 
 public class TeleportdActivity extends MapActivity {
     /** Called when the activity is first created. */
@@ -38,19 +41,32 @@ public class TeleportdActivity extends MapActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
         mapView = (MapView) findViewById(R.id.mapView);
         mc = mapView.getController();
         lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        point = new GeoPoint((int) (48.87*1E6),(int)(2.34*1E6));
+        point = new GeoPoint(48870000,2340000);
 		mc.setCenter(point);
-		mc.setZoom(13);
+		mc.setZoom(6);
+		
+		
+		
 		//GridView gridview=(GridView) findViewById(R.id.gridView);
         mapView.setBuiltInZoomControls(true);
-        mapView.invalidate();
-        new TeleportdAPIParser().execute(); //background task, fetch pictures and show them on the UI
+
+     
  
     }
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		String longi= ((Integer) mapView.getLongitudeSpan()).toString();
+		String lati= ((Integer) mapView.getLatitudeSpan()).toString();
+		Log.i("longi",longi);
+		Log.i("lati",lati);
+	
+		new TeleportdAPIParser().execute(); //background task, fetch pictures and show them on the UI
+	}
 
 	@Override
 	protected boolean isRouteDisplayed() {
@@ -83,7 +99,7 @@ public class TeleportdActivity extends MapActivity {
 		Marker marker;
 		List<Overlay> mapOverlays;
 		ImageAdapter adapter;
-		
+		GridView gridview;
 		
 		
 		@Override
@@ -94,7 +110,8 @@ public class TeleportdActivity extends MapActivity {
 			marker = new Marker(drawable);
 			mapOverlays = mapView.getOverlays();
 			adapter=new ImageAdapter();
-			//GridView gridview=(GridView) findViewById(R.id.gridView);
+			gridview=(GridView) findViewById(R.id.gridView);
+			adapter= new ImageAdapter();
 			
 			
 		}
@@ -109,15 +126,18 @@ public class TeleportdActivity extends MapActivity {
 			TPortItemList tpl=new TPortItemList();
 			
 	
-				urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,5.0,5.0%5D";
+				urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,10.0,5.0%5D&window=15";
 				try {
 					//urlString=URLEncoder.encode(urlString,"UTF-8");
 					request = fact.buildGetRequest(new GenericUrl(urlString));
+					HttpHeaders header=new HttpHeaders();
+					header.setAcceptEncoding("gzip");
+					request.setHeaders(header);
 					response = request.execute();
-					jp = jsonFactory.createJsonParser(response.getContent());
-					
+					jp = jsonFactory.createJsonParser(new BufferedInputStream(response.getContent()));
+					int i=0;
 
-					while(jp.nextValue()!=JsonToken.NOT_AVAILABLE){
+					while(jp.nextValue()!=null){
 						
 						jp.nextValue();
 						while(jp.getCurrentToken()!=JsonToken.END_OBJECT && jp.getCurrentToken()!=null){							
@@ -136,9 +156,8 @@ public class TeleportdActivity extends MapActivity {
 								
 								if(jp.getCurrentName().equals("thumb")){
 									tpi.thumb=jp.getText();
-									while(adapter.URLS.size()<9){
+									if(adapter.URLS.size()<9)
 										adapter.URLS.add(tpi.thumb);
-									}
 										
 								}
 								
@@ -156,11 +175,18 @@ public class TeleportdActivity extends MapActivity {
 									jp.nextValue().toString();
 									tpi.loc[1]=(int) (jp.getFloatValue()*1E6);
 									jp.nextValue();
-									publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
+									if(i<48)
+										publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
+									i++;
+									
 								}
 								
 								jp.nextValue();	
+								
 							}
+						
+						//Log.i("s",((Integer) i).toString());
+						Log.i("s","s");
 
 						//tpl.i.add(new TPortItem(tpi.sha, tpi.loc,tpi.age, tpi.date,tpi.thumb, tpi.rank, tpi.grade));
 							
@@ -180,6 +206,7 @@ public class TeleportdActivity extends MapActivity {
 			super.onProgressUpdate(values);
 			marker.addOverlay(new OverlayItem((GeoPoint) values[0], "Hola, Mundo!", "I'm in Mexico City!"));
 			mapOverlays.add(marker); // adding the whole overlays (list) on the maps
+			
 		
 		}
 
@@ -187,7 +214,10 @@ public class TeleportdActivity extends MapActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
+			Log.i("post", "post");
+			mapView.invalidate();
 			gridview.setAdapter(adapter);
+			
 		}
 
 
