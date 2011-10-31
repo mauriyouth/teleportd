@@ -1,4 +1,4 @@
-package teleportd.com.droid;
+package teleportd.com.droid.image;
 
 /*
  * Copyright (C) 2010 The Android Open Source Project

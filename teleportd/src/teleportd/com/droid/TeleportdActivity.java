@@ -7,6 +7,9 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import teleportd.com.droid.TPortItemList.TPortItem;
+import teleportd.com.droid.image.ImageAdapter;
+import teleportd.com.droid.map.Marker;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -46,7 +49,7 @@ public class TeleportdActivity extends MapActivity {
         lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         point = new GeoPoint(48870000,2340000);
 		mc.setCenter(point);
-		mc.setZoom(6);
+		mc.setZoom(0);
 		
 		
 		
@@ -125,8 +128,11 @@ public class TeleportdActivity extends MapActivity {
 			TPortItem tpi= new TPortItem();
 			TPortItemList tpl=new TPortItemList();
 			
+			Log.i("latitudespan,",((Integer)mapView.getLatitudeSpan()).toString());
+			Log.i("longitudespan,",((Integer)mapView.getLongitudeSpan()).toString());
+			
 	
-				urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,10.0,5.0%5D&window=15";
+				urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,10.0,5.0%5D";
 				try {
 					//urlString=URLEncoder.encode(urlString,"UTF-8");
 					request = fact.buildGetRequest(new GenericUrl(urlString));
@@ -135,7 +141,7 @@ public class TeleportdActivity extends MapActivity {
 					request.setHeaders(header);
 					response = request.execute();
 					jp = jsonFactory.createJsonParser(new BufferedInputStream(response.getContent()));
-					int i=0;
+				
 
 					while(jp.nextValue()!=null){
 						
@@ -156,8 +162,7 @@ public class TeleportdActivity extends MapActivity {
 								
 								if(jp.getCurrentName().equals("thumb")){
 									tpi.thumb=jp.getText();
-									if(adapter.URLS.size()<9)
-										adapter.URLS.add(tpi.thumb);
+									adapter.URLS.add(tpi.thumb);
 										
 								}
 								
@@ -175,9 +180,8 @@ public class TeleportdActivity extends MapActivity {
 									jp.nextValue().toString();
 									tpi.loc[1]=(int) (jp.getFloatValue()*1E6);
 									jp.nextValue();
-									if(i<48)
-										publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
-									i++;
+									publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
+									
 									
 								}
 								
@@ -205,7 +209,7 @@ public class TeleportdActivity extends MapActivity {
 		protected void onProgressUpdate(Object... values) {
 			super.onProgressUpdate(values);
 			marker.addOverlay(new OverlayItem((GeoPoint) values[0], "Hola, Mundo!", "I'm in Mexico City!"));
-			mapOverlays.add(marker); // adding the whole overlays (list) on the maps
+			 // adding the whole overlays (list) on the maps
 			
 		
 		}
@@ -215,6 +219,8 @@ public class TeleportdActivity extends MapActivity {
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			Log.i("post", "post");
+			marker.poupulateMap();
+			mapOverlays.add(marker);
 			mapView.invalidate();
 			gridview.setAdapter(adapter);
 			

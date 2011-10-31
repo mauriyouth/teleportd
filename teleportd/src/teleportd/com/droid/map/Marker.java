@@ -1,4 +1,4 @@
-package teleportd.com.droid;
+package teleportd.com.droid.map;
 
 import java.util.ArrayList;
 
@@ -40,9 +40,12 @@ public class Marker extends ItemizedOverlay<OverlayItem> {
 	
 	public void addOverlay(OverlayItem overlay) {
 	    mOverlays.add(overlay);
-	    populate();
+	    
 	}
 	
+	public void poupulateMap(){
+		populate();
+	}
 /*	@Override
 	protected boolean onTap(int index) {
 	  OverlayItem item = mOverlays.get(index);
