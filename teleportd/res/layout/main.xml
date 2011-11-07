@@ -14,7 +14,8 @@
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="199dp"
-        android:numColumns="3" >
+        android:numColumns="4"
+        >
     </GridView>
 
     <com.google.android.maps.MapView
@@ -23,7 +24,7 @@
 	 android:layout_height="fill_parent"
 	 android:enabled="true"
 	 android:clickable="true"
-	 android:apiKey="@string/mapkey"
+	 android:apiKey="@string/mapkey1"
  />
 
 </LinearLayout>

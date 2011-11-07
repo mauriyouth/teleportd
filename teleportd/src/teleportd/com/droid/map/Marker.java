@@ -2,18 +2,27 @@ package teleportd.com.droid.map;
 
 import java.util.ArrayList;
 
-import android.app.AlertDialog;
+import teleportd.com.droid.Thumb;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.OverlayItem;
+import com.google.android.maps.MapView;
 
 //ItemizedOverlay manage a whole set of Overlay
-public class Marker extends ItemizedOverlay<OverlayItem> {
-	private Context con;
+public class Marker extends ItemizedOverlay<Thumb> {
+	//private Context con;
 	
-	private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+	private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
 
+
+	public ArrayList<Thumb> getmOverlays() {
+		return mOverlays;
+	}
+
+	public void setmOverlays(ArrayList<Thumb> done) {
+		this.mOverlays = done;
+	}
 
 	public Marker(Drawable defaultMarker) {
 		super(boundCenterBottom(defaultMarker));
@@ -22,14 +31,14 @@ public class Marker extends ItemizedOverlay<OverlayItem> {
 	
 	public Marker(Drawable defaultMarker, Context context) {
 		super(boundCenterBottom(defaultMarker));
-		con=context;
+		//con=context;
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	protected OverlayItem createItem(int i) {
+	protected Thumb createItem(int i) {
 		// TODO Auto-generated method stub
-		return mOverlays.get(i);
+		return (Thumb) mOverlays.get(i);
 	}
 
 	@Override
@@ -38,13 +47,19 @@ public class Marker extends ItemizedOverlay<OverlayItem> {
 		return mOverlays.size();
 	}
 	
-	public void addOverlay(OverlayItem overlay) {
+	public void addOverlay(Thumb overlay) {
+		
 	    mOverlays.add(overlay);
 	    
 	}
 	
 	public void poupulateMap(){
 		populate();
+	}
+	
+	@Override
+	public void draw(Canvas canvas, MapView mapView, boolean shadow){
+	super.draw(canvas, mapView, false);
 	}
 /*	@Override
 	protected boolean onTap(int index) {
