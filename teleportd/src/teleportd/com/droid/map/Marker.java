@@ -1,19 +1,36 @@
 package teleportd.com.droid.map;
 
 import java.util.ArrayList;
-
-import teleportd.com.droid.Thumb;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapView;
 
-//ItemizedOverlay manage a whole set of Overlay
-public class Marker extends ItemizedOverlay<Thumb> {
-	//private Context con;
-	
+
+
+public class Marker extends ItemizedOverlay<Thumb>  {
+	private GestureDetector gd;
 	private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
+	
+	
+	public Marker(Drawable defaultMarker) {
+		super(boundCenterBottom(defaultMarker));
+	}
+	
+	public Marker(Drawable defaultMarker, Context context, GestureDetector.OnGestureListener listener) {
+		super(boundCenterBottom(defaultMarker));
+		gd = new GestureDetector(context, listener);
+	}
+	
+	
+	@Override
+	public boolean onTouchEvent(MotionEvent event, MapView mapView) {
+		return gd.onTouchEvent(event);
+	}
+
+
 
 
 	public ArrayList<Thumb> getmOverlays() {
@@ -24,26 +41,15 @@ public class Marker extends ItemizedOverlay<Thumb> {
 		this.mOverlays = done;
 	}
 
-	public Marker(Drawable defaultMarker) {
-		super(boundCenterBottom(defaultMarker));
-		// TODO Auto-generated constructor stub
-	}
 	
-	public Marker(Drawable defaultMarker, Context context) {
-		super(boundCenterBottom(defaultMarker));
-		//con=context;
-		// TODO Auto-generated constructor stub
-	}
 
 	@Override
 	protected Thumb createItem(int i) {
-		// TODO Auto-generated method stub
 		return (Thumb) mOverlays.get(i);
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
 		return mOverlays.size();
 	}
 	
@@ -58,16 +64,11 @@ public class Marker extends ItemizedOverlay<Thumb> {
 	}
 	
 	@Override
-	public void draw(Canvas canvas, MapView mapView, boolean shadow){
-	super.draw(canvas, mapView, false);
+	public void draw(android.graphics.Canvas canvas,MapView mapView,boolean shadow) {
+			super.draw(canvas, mapView, false);
+
 	}
-/*	@Override
-	protected boolean onTap(int index) {
-	  OverlayItem item = mOverlays.get(index);
-	  AlertDialog.Builder dialog = new AlertDialog.Builder(con);
-	  dialog.setTitle(item.getTitle());
-	  dialog.setMessage(item.getSnippet());
-	  dialog.show();
-	  return true;
-	}*/
+	
+
+	
 }

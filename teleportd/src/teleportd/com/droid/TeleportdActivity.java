@@ -4,6 +4,9 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -11,8 +14,8 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import teleportd.com.droid.image.ImageAdapter;
-import teleportd.com.droid.map.DistanceCalculator;
 import teleportd.com.droid.map.Marker;
+import teleportd.com.droid.map.Thumb;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -25,23 +28,28 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
 import android.widget.GridView;
-import android.widget.Toast;
 
-public class TeleportdActivity extends MapActivity implements  OnTouchListener {
+
+public class TeleportdActivity extends MapActivity {
 	/** Called when the activity is first created. */
 	MapView mapView;
 	MapController mc;
 	GeoPoint point; //user actual coordinate
 	LocationManager lm;
 	GridView gridview ;
+	GestureDetector gd;
+	OnGestureListener mapGestureListener;
+	TeleportdAPIParser backgroundTask;
+	private Context con;
+	private Handler handler = new Handler();
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +61,72 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 		mc.setCenter(point);
 		mc.setZoom(10);
 		mapView.setBuiltInZoomControls(true);
+		con=getBaseContext();
+		
+		mapGestureListener = new OnGestureListener() {
+			Timer t = new Timer();
+			Boolean scheduledTask = false;
+			int width = mapView.getWidth();
+			int height =mapView.getHeight();
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public void onShowPress(MotionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {
+				if ((Math.abs(e1.getRawY() - e2.getRawY())) > (height/2) | (Math.abs(e1.getRawX() - e2.getRawX())) > (width/2)){
+					Log.i("true","true");
+				}
+						
+		              
+				Log.i("onScroll","onScroll 1");
+				Log.i("onScroll",String.format("dsX: %s, dsY: %s",distanceX,distanceY));
+				mapView.getWidth();
+				mapView.getHeight();
+				
+//				if(backgroundTask.getStatus()==Status.FINISHED){
+//					if(!scheduledTask){
+//						t.schedule(new MyTimerTask(), 5000);
+//						scheduledTask=true;
+//						return false;
+//						}
+//					
+//					t.cancel();
+//					t=new Timer();
+//					t.schedule(new MyTimerTask(), 5000);
+//					scheduledTask=true;
+//					}
+//				Log.i("onScroll","onScroll 2");
+				return false;
+			}
+			
+			@Override
+			public void onLongPress(MotionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+					float velocityY) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean onDown(MotionEvent e) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+		};
 		
 
 
@@ -65,9 +139,8 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 		String lati= ((Integer) mapView.getLatitudeSpan()).toString();
 		Log.i("longi",longi);
 		Log.i("lati",lati);
-		mapView.setOnTouchListener(this);
-		new TeleportdAPIParser().execute(); //background task, fetch pictures and show them on the UI
-		
+		backgroundTask=new TeleportdAPIParser(); //background task, fetch pictures and show them on the UI
+		backgroundTask.execute();
 	}
 
 
@@ -89,13 +162,12 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 
 
 	private class TeleportdAPIParser extends AsyncTask<Void, Object, ArrayList<Thumb>> {
-		final HttpClient client = AndroidHttpClient.newInstance("Android");
+		private HttpClient client; 
 	    private HttpGet getRequest;
 		private String urlString;
 		private JsonFactory jsonFactory; 
 		private JsonParser jp;
 		private ArrayList<Thumb> thumbs;
-		private Context con;
 		MapView mapView;
 		Marker marker;
 		List<Overlay> mapOverlays;
@@ -106,10 +178,11 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
+			client = AndroidHttpClient.newInstance("Android");
 			mapView=(MapView) findViewById(R.id.mapView);
 			con=getBaseContext();
 			Drawable drawable = getResources().getDrawable(R.drawable.pin);
-			marker = new Marker(drawable);
+			marker = new Marker(drawable, con, mapGestureListener);
 			mapOverlays = mapView.getOverlays();
 			adapter=new ImageAdapter();
 			gridview=(GridView) findViewById(R.id.gridView);
@@ -132,7 +205,6 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 			try {
 				//urlString=URLEncoder.encode(urlString,"UTF-8");
 				getRequest=new HttpGet(urlString);
-			
 				HttpResponse response=client.execute(getRequest);
 				getRequest.setHeader("encoding", "gzip");				
 				jp = jsonFactory.createJsonParser(new BufferedInputStream(response.getEntity().getContent()));
@@ -194,19 +266,21 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 					}
 					thumbs.add(new Thumb(sha,thumb,new GeoPoint(lat,log)));
 					thumbs.get(thumbs.size()-1).aggregation=(con.getResources().getDrawable(R.drawable.aggregation));
-
+					thumbs.get(thumbs.size()-1).pin=(con.getResources().getDrawable(R.drawable.pin));
 					//Log.i("s",((Integer) i).toString());
 					Log.i("s","s");
 
 					//tpl.i.add(new TPortItem(tpi.sha, tpi.loc,tpi.age, tpi.date,tpi.thumb, tpi.rank, tpi.grade));
 
 
-				}	
+				}
+				jp.close();
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 
 			return consolidateOp();
 		}
@@ -299,8 +373,6 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 			     marker.poupulateMap();
 			}
 			
-							
-		
 		
 		}
 
@@ -316,12 +388,22 @@ public class TeleportdActivity extends MapActivity implements  OnTouchListener {
 		}
 
 	}
+	
+	
+    public class MyTimerTask extends TimerTask {
+        private Runnable runnable = new Runnable() {
+            public void run() {
+            	// a task can be executed only once, so we have to instantiate a new on
+            	backgroundTask.cancel(true);
+            	backgroundTask= new TeleportdAPIParser();
+                backgroundTask.execute();
+            }
+        };
+
+        public void run() {
+            handler.post(runnable);
+        }
+    }
 
 
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		
-		return false;
-	}
 }
