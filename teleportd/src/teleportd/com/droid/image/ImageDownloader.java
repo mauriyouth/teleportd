@@ -22,6 +22,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -165,12 +167,20 @@ public class ImageDownloader {
         // AndroidHttpClient is not allowed to be used from the main thread
         final HttpClient client = (mode == Mode.NO_ASYNC_TASK) ? new DefaultHttpClient() :
             AndroidHttpClient.newInstance("Android");
+        HttpParams params = client.getParams();
+        int timeoutConnection = 3000;
+        HttpConnectionParams.setConnectionTimeout(params, timeoutConnection);
+        int timeoutSocket = 3000;
+        HttpConnectionParams.setSoTimeout(params, timeoutSocket);
+        
+ 
         final HttpGet getRequest = new HttpGet(url);
 
         try {
             HttpResponse response = client.execute(getRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
+            	
                 Log.w("ImageDownloader", "Error " + statusCode +
                         " while retrieving bitmap from " + url);
                 return null;

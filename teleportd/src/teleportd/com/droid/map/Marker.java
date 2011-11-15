@@ -12,11 +12,12 @@ import com.google.android.maps.MapView;
 
 public class Marker extends ItemizedOverlay<Thumb>  {
 	private GestureDetector gd;
-	private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
+	 private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
 	
 	
 	public Marker(Drawable defaultMarker) {
 		super(boundCenterBottom(defaultMarker));
+		populate();
 	}
 	
 	public Marker(Drawable defaultMarker, Context context, GestureDetector.OnGestureListener listener) {
@@ -44,30 +45,40 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 	
 
 	@Override
-	protected Thumb createItem(int i) {
+	protected synchronized  Thumb createItem(int i) {
 		return (Thumb) mOverlays.get(i);
 	}
 
 	@Override
-	public int size() {
+	public synchronized int size() {
 		return mOverlays.size();
 	}
 	
-	public void addOverlay(Thumb overlay) {
-		
+	public  void addOverlay(Thumb overlay) {
 	    mOverlays.add(overlay);
+	    
 	    
 	}
 	
 	public void poupulateMap(){
+		setLastFocusedIndex(-1);
 		populate();
 	}
 	
 	@Override
-	public void draw(android.graphics.Canvas canvas,MapView mapView,boolean shadow) {
-			super.draw(canvas, mapView, false);
+	public  void draw(android.graphics.Canvas canvas,MapView mapView,boolean shadow) {
+		setLastFocusedIndex(-1);	
+		super.draw(canvas, mapView, false);
 
 	}
+	
+	@Override
+	protected synchronized int getIndexToDraw(int drawingOrder) {
+		setLastFocusedIndex(-1);	
+		return super.getIndexToDraw(drawingOrder);
+	}
+	
+	
 	
 
 	

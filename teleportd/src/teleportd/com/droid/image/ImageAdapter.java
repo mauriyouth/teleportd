@@ -9,11 +9,10 @@ import android.widget.ImageView;
 
 public class ImageAdapter extends BaseAdapter {
     public ArrayList<String> URLS;
-    ImageDownloader imageDownloader;
 
     public ImageAdapter() {
     	URLS=new ArrayList<String>();
-        imageDownloader=new ImageDownloader();
+    
     }
 
     public int getCount() {
@@ -33,15 +32,17 @@ public class ImageAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {  // if it's not recycled, initialize some attributes
             imageView = new ImageView(parent.getContext());
-            //imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(8, 8, 8, 8);
+           //imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
+           imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE );
+      
         } else {
             imageView = (ImageView) convertView;
         }
 
        // imageView.setImageResource(mThumbIds[position]);
-        imageDownloader.download(URLS.get(position),  imageView);
+        ImageLoader.initialize(parent.getContext());
+        ImageLoader.start(URLS.get(position), imageView);
+        //imageDownloader.download(URLS.get(position),  imageView);
         return imageView;
     }
 }

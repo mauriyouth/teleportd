@@ -3,6 +3,7 @@ package teleportd.com.droid;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +29,6 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -50,7 +50,7 @@ public class TeleportdActivity extends MapActivity {
 	TeleportdAPIParser backgroundTask;
 	private Context con;
 	private Handler handler = new Handler();
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,72 +62,66 @@ public class TeleportdActivity extends MapActivity {
 		mc.setZoom(10);
 		mapView.setBuiltInZoomControls(true);
 		con=getBaseContext();
-		
+
 		mapGestureListener = new OnGestureListener() {
 			Timer t = new Timer();
 			Boolean scheduledTask = false;
-			int width = mapView.getWidth();
-			int height =mapView.getHeight();
+			private long minTime = 300;
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
 			public void onShowPress(MotionEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {
-				if ((Math.abs(e1.getRawY() - e2.getRawY())) > (height/2) | (Math.abs(e1.getRawX() - e2.getRawX())) > (width/2)){
-					Log.i("true","true");
+				Long dt =  e2.getEventTime() - e2.getDownTime();
+
+				//mapView.get
+				if(dt>minTime){
+					Log.i("long", dt.toString());
+					if(!scheduledTask){
+						t.schedule(new MyTimerTask(), 5000);
+						scheduledTask=true;
+						return false;
+					}
+
+					t.cancel();
+					t.purge();
+
+					t=new Timer();
+					t.schedule(new MyTimerTask(), 5000);
+					scheduledTask=true;
 				}
-						
-		              
-				Log.i("onScroll","onScroll 1");
-				Log.i("onScroll",String.format("dsX: %s, dsY: %s",distanceX,distanceY));
-				mapView.getWidth();
-				mapView.getHeight();
-				
-//				if(backgroundTask.getStatus()==Status.FINISHED){
-//					if(!scheduledTask){
-//						t.schedule(new MyTimerTask(), 5000);
-//						scheduledTask=true;
-//						return false;
-//						}
-//					
-//					t.cancel();
-//					t=new Timer();
-//					t.schedule(new MyTimerTask(), 5000);
-//					scheduledTask=true;
-//					}
-//				Log.i("onScroll","onScroll 2");
 				return false;
 			}
-			
+
 			@Override
 			public void onLongPress(MotionEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 					float velocityY) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
 			public boolean onDown(MotionEvent e) {
 				// TODO Auto-generated method stub
 				return false;
 			}
 		};
-		
+
 
 
 	}
@@ -135,10 +129,6 @@ public class TeleportdActivity extends MapActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		String longi= ((Integer) mapView.getLongitudeSpan()).toString();
-		String lati= ((Integer) mapView.getLatitudeSpan()).toString();
-		Log.i("longi",longi);
-		Log.i("lati",lati);
 		backgroundTask=new TeleportdAPIParser(); //background task, fetch pictures and show them on the UI
 		backgroundTask.execute();
 	}
@@ -160,10 +150,16 @@ public class TeleportdActivity extends MapActivity {
 	}
 
 
+	protected void buttonStuff(){
+
+
+	}
+
+
 
 	private class TeleportdAPIParser extends AsyncTask<Void, Object, ArrayList<Thumb>> {
 		private HttpClient client; 
-	    private HttpGet getRequest;
+		private HttpGet getRequest;
 		private String urlString;
 		private JsonFactory jsonFactory; 
 		private JsonParser jp;
@@ -233,12 +229,16 @@ public class TeleportdActivity extends MapActivity {
 							//tpi.age=jp.getIntValue();
 						}
 
+
 						if(jp.getCurrentName().equals("thumb")){
 							//tpi.thumb=jp.getText();
 							thumb=jp.getText();
 							adapter.URLS.add(jp.getText());
 
+
+
 						}
+
 
 						if(jp.getCurrentName().equals("rank")){
 							//tpi.rank=jp.getIntValue();
@@ -267,20 +267,17 @@ public class TeleportdActivity extends MapActivity {
 					thumbs.add(new Thumb(sha,thumb,new GeoPoint(lat,log)));
 					thumbs.get(thumbs.size()-1).aggregation=(con.getResources().getDrawable(R.drawable.aggregation));
 					thumbs.get(thumbs.size()-1).pin=(con.getResources().getDrawable(R.drawable.pin));
-					//Log.i("s",((Integer) i).toString());
-					Log.i("s","s");
-
-					//tpl.i.add(new TPortItem(tpi.sha, tpi.loc,tpi.age, tpi.date,tpi.thumb, tpi.rank, tpi.grade));
-
+	
 
 				}
 				jp.close();
+				client.getConnectionManager().shutdown();
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 
 			return consolidateOp();
 		}
@@ -290,7 +287,7 @@ public class TeleportdActivity extends MapActivity {
 			Rect visibleRect= new Rect();
 			ArrayList<Thumb> constructor = new ArrayList<Thumb> ();
 			mapView.getDrawingRect(visibleRect);
-			
+
 			for(Thumb thumb : thumbs){ 
 				Point currentDevicePosition = new Point();
 				mapView.getProjection().toPixels(thumb.loc,currentDevicePosition);
@@ -327,53 +324,61 @@ public class TeleportdActivity extends MapActivity {
 			return done;
 
 		}
-		
-		
+
+
 
 		private void consolidateOpDone(ArrayList<Thumb> done) {
-			
+
 			if(mapOverlays.size()==0){
-				   marker.setmOverlays(done);
-				   mapOverlays.add(marker);
-				   marker.poupulateMap();
-				
+				marker.setmOverlays(done);
+				mapOverlays.add(marker);
+				marker.poupulateMap();
+
 			}
 			else{
-				
+
 				ArrayList<Thumb> annotations = ((Marker)mapOverlays.get(0)).getmOverlays();
 				ArrayList<Thumb> delPoints = new ArrayList<Thumb>();
-				
+
 				Boolean remove=false;
-				
-				for(Thumb pt:annotations) {
-					for(Thumb d:done){
-						if(d.sha.equals(pt.sha)){
-							done.remove(d);
-							remove=true;
+
+				synchronized (annotations) {
+
+					for(Thumb pt:annotations) {
+						for(Iterator<Thumb> it=done.iterator(); it.hasNext();){
+							Thumb d=it.next();
+							if(d.sha.equals(pt.sha)){
+								it.remove();
+								remove=true;
 							}
+						}
+
+						if(remove){ 
+							delPoints.add(pt);
+							remove=false;
+						}
+
+
 					}
-			        if(remove){ 
-			            delPoints.add(pt);
-			            remove=false;
-			            }
-			        
-			     
-			    }
-				
-			     for(Thumb pt:delPoints) {
-			            annotations.remove(pt);
-			        }
-			     for(Thumb a:done) {
-			    	 annotations.add(a);
-			 
-			        }
-			     
-			     marker.setmOverlays(annotations);
-			     mapOverlays.add(marker);
-			     marker.poupulateMap();
+
+					for(Thumb pt:delPoints) {
+						annotations.remove(pt);
+					}
+					for(Thumb a:done) {
+						annotations.add(a);
+
+					}
+
+				}
+
+
+
+				marker.setmOverlays(annotations);
+				mapOverlays.add(marker);
+				marker.poupulateMap();
 			}
-			
-		
+
+
 		}
 
 
@@ -388,22 +393,22 @@ public class TeleportdActivity extends MapActivity {
 		}
 
 	}
-	
-	
-    public class MyTimerTask extends TimerTask {
-        private Runnable runnable = new Runnable() {
-            public void run() {
-            	// a task can be executed only once, so we have to instantiate a new on
-            	backgroundTask.cancel(true);
-            	backgroundTask= new TeleportdAPIParser();
-                backgroundTask.execute();
-            }
-        };
 
-        public void run() {
-            handler.post(runnable);
-        }
-    }
+
+	public class MyTimerTask extends TimerTask {
+		private Runnable runnable = new Runnable() {
+			public void run() {
+				// a task can be executed only once, so we have to instantiate a new on
+				backgroundTask.cancel(true);
+				backgroundTask= new TeleportdAPIParser();
+				backgroundTask.execute();
+			}
+		};
+
+		public void run() {
+			handler.post(runnable);
+		}
+	}
 
 
 }

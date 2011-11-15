@@ -6,5 +6,6 @@
     <string name="mapkey">0H9BEBPE6XxAAe3wOT2kTvaicqErJMOlDgxhJfA</string>
     <string name="teleportdAPIKey">1c5a31ccf46cd172e604e103c97239bd</string>
     <string name="mapkey1">0H9BEBPE6XxBEkRCD1_qzo3_68vfFr3d1i7eTkg</string>
+    <color name="white">#ffffffff</color>
 
 </resources>
