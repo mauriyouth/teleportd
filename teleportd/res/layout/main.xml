@@ -10,9 +10,7 @@
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="189dp"
-        android:horizontalSpacing="0dp"
         android:numColumns="4"
-        android:verticalSpacing="0dp"
         android:listSelector="@android:color/transparent"
          >
 

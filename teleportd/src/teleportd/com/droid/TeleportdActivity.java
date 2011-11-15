@@ -217,7 +217,6 @@ public class TeleportdActivity extends MapActivity {
 					while(jp.getCurrentToken()!=JsonToken.END_OBJECT && jp.getCurrentToken()!=null){
 
 						if(jp.getCurrentName().equals("sha")){
-							//tpi.sha=jp.getText();
 							sha=jp.getText();
 						}
 
@@ -231,7 +230,6 @@ public class TeleportdActivity extends MapActivity {
 
 
 						if(jp.getCurrentName().equals("thumb")){
-							//tpi.thumb=jp.getText();
 							thumb=jp.getText();
 							adapter.URLS.add(jp.getText());
 
@@ -250,10 +248,8 @@ public class TeleportdActivity extends MapActivity {
 
 						if(jp.getCurrentName().equals("loc")){
 							jp.nextValue().toString();
-							//tpi.loc[0]=(int) (jp.getFloatValue()*1E6);
 							lat=(int) (jp.getFloatValue()*1E6);
 							jp.nextValue().toString();
-							//tpi.loc[1]=(int) (jp.getFloatValue()*1E6);
 							log=(int) (jp.getFloatValue()*1E6);
 							jp.nextValue();
 							//publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
@@ -321,6 +317,7 @@ public class TeleportdActivity extends MapActivity {
 					constructor.remove(0);
 				} 
 			}
+			Log.i("consolidate done",((Integer) done.size()).toString());
 			return done;
 
 		}
@@ -336,46 +333,55 @@ public class TeleportdActivity extends MapActivity {
 
 			}
 			else{
-
-				ArrayList<Thumb> annotations = ((Marker)mapOverlays.get(0)).getmOverlays();
+				//same as, same object reference
+				//marker.getmOverlays();((Marker)mapOverlays.get(0)).getmOverlays();
+				//those currently on the mapview
+				ArrayList<Thumb> annotations =marker.getmOverlays(); 
+				
+				
+				//those to be removed
 				ArrayList<Thumb> delPoints = new ArrayList<Thumb>();
 
-				Boolean remove=false;
+				Boolean found=false;
 
 				synchronized (annotations) {
-
+					//we check here if there's an overlayitem loaded in "done array" and already exist on the map
 					for(Thumb pt:annotations) {
 						for(Iterator<Thumb> it=done.iterator(); it.hasNext();){
 							Thumb d=it.next();
 							if(d.sha.equals(pt.sha)){
 								it.remove();
-								remove=true;
+								found=true;
 							}
+							
+							
+						}
+						
+						if(!found){ 
+							delPoints.add(pt);
+							found=false;
 						}
 
-						if(remove){ 
-							delPoints.add(pt);
-							remove=false;
-						}
+						
 
 
 					}
 
 					for(Thumb pt:delPoints) {
 						annotations.remove(pt);
+						marker.poupulateMap();
 					}
 					for(Thumb a:done) {
 						annotations.add(a);
+						marker.poupulateMap();
 
 					}
 
 				}
-
-
-
-				marker.setmOverlays(annotations);
-				mapOverlays.add(marker);
-				marker.poupulateMap();
+				
+				Log.i("consolidate annotations done",((Integer) annotations.size()).toString());
+				//marker.setmOverlays(annotations);
+				//marker.poupulateMap();
 			}
 
 

@@ -79,6 +79,14 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 	}
 	
 	
+	//not implemented yet
+	@Override
+	protected boolean onTap(int index) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+	
+	
 	
 
 	
