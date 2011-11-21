@@ -4,16 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:padding="-1dp" >
+   >
 
     <GridView
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="189dp"
-        android:numColumns="4"
         android:listSelector="@android:color/transparent"
-         >
-
+        android:numColumns="4" >
     </GridView>
 
     <RelativeLayout
@@ -21,47 +19,51 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/gridView"
-        android:background="@drawable/background_menu"
         android:gravity="center"
-       >
-       
-          
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/locate" />
+        android:background="@drawable/background_menu" >
 
-        <ImageView
-            android:id="@+id/imageView2"
+        <Button
+            android:id="@+id/button1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/imageView1"
-            android:src="@drawable/orbit" />
+            android:background="@drawable/locatex" 
+            android:onClick="buttonManage" />
 
-        <ImageView
-            android:id="@+id/imageView3"
+        <Button
+            android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/imageView2"
-            android:src="@drawable/search" />
+            android:layout_toRightOf="@+id/button1"
+            android:background="@drawable/orbitx"
+            android:onClick="buttonManage" />
 
-        <ImageView
-            android:id="@+id/imageView4"
+        <Button
+            android:id="@+id/button3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/imageView3"
-            android:src="@drawable/snap" />
+            android:layout_toRightOf="@+id/button2"
+            android:background="@drawable/searchx"
+            android:onClick="buttonManage"  />
 
-        <ImageView
-            android:id="@+id/imageView5"
+        <Button
+            android:id="@+id/button4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/imageView4"
-            android:src="@drawable/profile" />
+            android:layout_toRightOf="@+id/button3"
+            android:background="@drawable/snapx"
+            android:onClick="buttonManage"  />
+
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/button4"
+            android:background="@drawable/profilex"
+            android:onClick="buttonManage"  />
+        
     </RelativeLayout>
 
-    <com.google.android.maps.MapView
+    <teleportd.com.droid.map.TeleportdMapView
         android:id="@+id/mapView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

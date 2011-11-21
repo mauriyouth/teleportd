@@ -16,6 +16,7 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import teleportd.com.droid.image.ImageAdapter;
 import teleportd.com.droid.map.Marker;
+import teleportd.com.droid.map.TeleportdMapView;
 import teleportd.com.droid.map.Thumb;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -26,6 +27,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
@@ -35,18 +37,19 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.GridView;
 
 
 public class TeleportdActivity extends MapActivity {
 	/** Called when the activity is first created. */
-	MapView mapView;
+	TeleportdMapView mapView;
 	MapController mc;
 	GeoPoint point; //user actual coordinate
 	LocationManager lm;
 	GridView gridview ;
 	GestureDetector gd;
-	OnGestureListener mapGestureListener;
+	OnGestureListenerTel mapGestureListener;
 	TeleportdAPIParser backgroundTask;
 	private Context con;
 	private Handler handler = new Handler();
@@ -55,80 +58,107 @@ public class TeleportdActivity extends MapActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		mapView = (MapView) findViewById(R.id.mapView);
+		mapGestureListener = new OnGestureListenerTel();
+		mapView = (TeleportdMapView) findViewById(R.id.mapView);
+		mapView.setZoomListener(mapGestureListener);
 		mc = mapView.getController();
+		
+		
 		point = new GeoPoint(48870000,2340000);
 		mc.setCenter(point);
-		mc.setZoom(10);
+		mc.setZoom(13);
 		mapView.setBuiltInZoomControls(true);
 		con=getBaseContext();
 
-		mapGestureListener = new OnGestureListener() {
-			Timer t = new Timer();
-			Boolean scheduledTask = false;
-			private long minTime = 300;
-			@Override
-			public boolean onSingleTapUp(MotionEvent e) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public void onShowPress(MotionEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {
-				Long dt =  e2.getEventTime() - e2.getDownTime();
-
-				//mapView.get
-				if(dt>minTime){
-					Log.i("long", dt.toString());
-					if(!scheduledTask){
-						t.schedule(new MyTimerTask(), 5000);
-						scheduledTask=true;
-						return false;
-					}
-
-					t.cancel();
-					t.purge();
-
-					t=new Timer();
-					t.schedule(new MyTimerTask(), 5000);
-					scheduledTask=true;
-				}
-				return false;
-			}
-
-			@Override
-			public void onLongPress(MotionEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-					float velocityY) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public boolean onDown(MotionEvent e) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-		};
+		
 
 
 
 	}
+	
+	
+	public class OnGestureListenerTel implements OnGestureListener {
+		Timer t = new Timer();
+		Boolean scheduledTask = false;
+		private long minTime = 300;
+		@Override
+		public boolean onSingleTapUp(MotionEvent e) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void onShowPress(MotionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {
+			Long dt =  e2.getEventTime() - e2.getDownTime();
+
+			//mapView.get
+			if(dt>minTime){
+				Log.i("long", dt.toString());
+				if(!scheduledTask){
+					t.schedule(new MyTimerTask(), 5000);
+					scheduledTask=true;
+					return false;
+				}
+
+				t.cancel();
+				t.purge();
+
+				t=new Timer();
+				t.schedule(new MyTimerTask(), 5000);
+				scheduledTask=true;
+			}
+			return false;
+		}
+		
+		public void zoomEvent(){
+			
+			if(!scheduledTask){
+				t.schedule(new MyTimerTask(), 5000);
+				scheduledTask=true;
+			}
+
+			t.cancel();
+			t.purge();
+
+			t=new Timer();
+			t.schedule(new MyTimerTask(), 5000);
+			scheduledTask=true;
+		}
+
+		@Override
+		public void onLongPress(MotionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean onDown(MotionEvent e) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	}
+
+	
+	
+	
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		//locolizeMe();
 		backgroundTask=new TeleportdAPIParser(); //background task, fetch pictures and show them on the UI
 		backgroundTask.execute();
 	}
@@ -150,14 +180,23 @@ public class TeleportdActivity extends MapActivity {
 	}
 
 
-	protected void buttonStuff(){
-
-
+	protected void locolizeMe(){
+//		LocationManager locationManager =
+//			(LocationManager)getSystemService(Context.LOCATION_SERVICE);
+//			List<String> fournisseurs = locationManager.getProviders(true);
+		LocationManager locationManager =
+		(LocationManager)getSystemService(Context.LOCATION_SERVICE);
+			//LocationProvider locationProvider = locationManager.getProvider(LocationManager.NETWORK_PROVIDER);
+			// Or use LocationManager.GPS_PROVIDER
+			 
+			Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			Log.i("lastKnownLocation", lastKnownLocation.toString());
+			//return point;
 	}
 
 
 
-	private class TeleportdAPIParser extends AsyncTask<Void, Object, ArrayList<Thumb>> {
+	public class TeleportdAPIParser extends AsyncTask<Void, Object, ArrayList<Thumb>> {
 		private HttpClient client; 
 		private HttpGet getRequest;
 		private String urlString;
@@ -169,6 +208,24 @@ public class TeleportdActivity extends MapActivity {
 		List<Overlay> mapOverlays;
 		ImageAdapter adapter;
 		GridView gridview;
+		
+		
+		protected String generateAPIRequest(){
+			//http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,10.0,5.0%5D
+			StringBuffer request= new StringBuffer("http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B");
+			request.append(mapView.getMapCenter().getLatitudeE6()/1E6);
+
+			request.append(",");
+			request.append(mapView.getMapCenter().getLongitudeE6()/1E6);
+
+			Log.i("mapView.getMapCenter().getLatitudeE6()", ((Integer) mapView.getMapCenter().getLatitudeE6()).toString());
+			request.append(",");
+			request.append(mapView.getLongitudeSpan()/1E6);
+			request.append(",");
+			request.append(mapView.getLatitudeSpan()/1E6);
+			request.append("%5D");
+			return request.toString(); 
+		}
 
 
 		@Override
@@ -182,7 +239,9 @@ public class TeleportdActivity extends MapActivity {
 			mapOverlays = mapView.getOverlays();
 			adapter=new ImageAdapter();
 			gridview=(GridView) findViewById(R.id.gridView);
+			
 			adapter= new ImageAdapter();
+		
 
 
 		}
@@ -199,8 +258,9 @@ public class TeleportdActivity extends MapActivity {
 
 			urlString="http://v1.api.teleportd.com:8080/search?apikey=1c5a31ccf46cd172e604e103c97239bd&loc=%5B48.87,2.34,10.0,5.0%5D";
 			try {
-				//urlString=URLEncoder.encode(urlString,"UTF-8");
-				getRequest=new HttpGet(urlString);
+				Log.i("sss",generateAPIRequest());
+				getRequest=new HttpGet(generateAPIRequest());
+				//getRequest=new HttpGet(urlString);
 				HttpResponse response=client.execute(getRequest);
 				getRequest.setHeader("encoding", "gzip");				
 				jp = jsonFactory.createJsonParser(new BufferedInputStream(response.getEntity().getContent()));
@@ -317,7 +377,7 @@ public class TeleportdActivity extends MapActivity {
 					constructor.remove(0);
 				} 
 			}
-			Log.i("consolidate done",((Integer) done.size()).toString());
+			Log.i("fetched images that fits in my mapview rect",((Integer) done.size()).toString());
 			return done;
 
 		}
@@ -354,7 +414,6 @@ public class TeleportdActivity extends MapActivity {
 								found=true;
 							}
 							
-							
 						}
 						
 						if(!found){ 
@@ -362,28 +421,25 @@ public class TeleportdActivity extends MapActivity {
 							found=false;
 						}
 
-						
-
-
 					}
 
 					for(Thumb pt:delPoints) {
-						annotations.remove(pt);
-						marker.poupulateMap();
+						marker.removeOverlay(pt);
+						//marker.poupulateMap();
+						//mapView.invalidate();
 					}
+					
 					for(Thumb a:done) {
-						annotations.add(a);
-						marker.poupulateMap();
-
+						marker.addOverlay(a);
+						//marker.poupulateMap();
+						//mapView.invalidate();
 					}
-
 				}
+				marker.poupulateMap();
+				mapView.invalidate();
 				
-				Log.i("consolidate annotations done",((Integer) annotations.size()).toString());
-				//marker.setmOverlays(annotations);
-				//marker.poupulateMap();
+				Log.i("annotations size",((Integer) annotations.size()).toString());
 			}
-
 
 		}
 
@@ -392,8 +448,7 @@ public class TeleportdActivity extends MapActivity {
 		protected void onPostExecute(ArrayList<Thumb> result) {
 			super.onPostExecute(result);
 			Log.i("post", "post");
-			consolidateOpDone(result);
-			mapView.invalidate();
+			consolidateOpDone(result);			
 			gridview.setAdapter(adapter);
 
 		}
@@ -413,6 +468,43 @@ public class TeleportdActivity extends MapActivity {
 
 		public void run() {
 			handler.post(runnable);
+		}
+	}
+	
+	//button1 locate
+	//buton2  orbit
+	//buton3  search
+	//buton4  snap
+	//buton5 profile
+	
+	public void buttonManage(View view){
+		int id = view.getId();
+		switch (id) {
+		
+		case R.id.button1:
+		
+			break;
+		
+		case R.id.button2:
+			mc.setZoom(2);
+			break;
+		
+		case R.id.button3:
+		//	Intent i = new Intent(Intent.ACTION_SEND);
+		
+			break;
+		
+		case R.id.button4:
+			break;
+		
+		case R.id.button5:
+			((Marker)mapView.getOverlays().get(0)).addOverlay(new Thumb("zedz", "ezez", mapView.getMapCenter()));
+			
+			break;
+		
+
+		default:
+			break;
 		}
 	}
 
