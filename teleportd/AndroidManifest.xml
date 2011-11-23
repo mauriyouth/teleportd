@@ -16,13 +16,18 @@
         <uses-library android:name="com.google.android.maps" />
         <activity
             android:label="@string/app_name"
-            android:name=".TeleportdActivity" >
+            android:name=".SplashScreen" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity 
+              android:label="@string/app_name"
+            android:name=".TeleportdActivity" >
+            </activity>
     </application>
 
 </manifest>

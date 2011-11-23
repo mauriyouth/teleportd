@@ -14,8 +14,8 @@ public class Thumb extends OverlayItem{
 	public GeoPoint loc;
 	public boolean merged;
 	public int halo;
-	public Drawable aggregation;
-	public Drawable pin;
+	public static Drawable aggregation;
+	public static Drawable pin;
 	Drawable[] layers = new Drawable[2];
 	LayerDrawable layer;
 	

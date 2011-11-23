@@ -3,6 +3,7 @@ package teleportd.com.droid.map;
 import java.util.ArrayList;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import com.google.android.maps.ItemizedOverlay;
@@ -10,26 +11,36 @@ import com.google.android.maps.MapView;
 
 
 
+
 public class Marker extends ItemizedOverlay<Thumb>  {
 	private GestureDetector gd;
-	 private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
-	
-	
+	private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
+
+	Drawable marker;
+	MapView mapView;
+
+
+
 	public Marker(Drawable defaultMarker) {
 		super(boundCenterBottom(defaultMarker));
-		populate();
+		marker=defaultMarker;
+		
 
 	}
-	
-	public Marker(Drawable defaultMarker, Context context, GestureDetector.OnGestureListener listener) {
+
+	public Marker(Drawable defaultMarker, Context context, GestureDetector.OnGestureListener listener,MapView mapView) {
 		super(boundCenterBottom(defaultMarker));
+		marker=defaultMarker;
 		gd = new GestureDetector(context, listener);
+		this.mapView=mapView;
+		populate();
 	}
-	
-	
+
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event, MapView mapView) {
-		return gd.onTouchEvent(event);
+		gd.onTouchEvent(event);
+		return super.onTouchEvent(event, mapView);
 	}
 
 
@@ -43,56 +54,60 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 		this.mOverlays = done;
 	}
 
-	
+
 
 	@Override
-	protected   Thumb createItem(int i) {
+	protected  synchronized Thumb createItem(int i) {
+		if(i>=mOverlays.size())
+			return null;
 		return  mOverlays.get(i);
 	}
-	
-	
+
+
 	@Override
-	public  int size() {
-		return mOverlays.size();
+	public  synchronized int size() {
+
+		return this.mOverlays.size();
 	}
-	
+
 	public  void addOverlay(Thumb overlay) {
-		populate();
-	    
+		mOverlays.add(overlay);
+		super.populate();
+
+
 	}
-	
+
 	public void removeOverlay(Thumb overlay){
-		populate();
-		
-		
-	}
-	
-	public void poupulateMap(){
+		mOverlays.remove(overlay);
+		super.populate();
 		setLastFocusedIndex(-1);
-		populate();
-		
+
 	}
-	
-	
-	
+
+	public void poupulateMap(){
+		super.populate();
+		setLastFocusedIndex(-1);
+
+	}
+
+
+	int i=0;
 	//we overrided draw so we can remove shaddow of map pins 
 	@Override
-	public  void draw(android.graphics.Canvas canvas,MapView mapView,boolean shadow) {
-		//setLastFocusedIndex(-1);	
-	super.draw(canvas, mapView, false);
+	public  void draw(android.graphics.Canvas canvas,MapView mapView,boolean shadow) {	
+		super.draw(canvas, mapView, false);
+		Log.i("draw called ", ((Integer) i).toString());
+		i++;
+
 
 	}
 
-	
-	
-	/*
 	@Override
 	protected synchronized int getIndexToDraw(int drawingOrder) {
-		setLastFocusedIndex(-1);	
 		return super.getIndexToDraw(drawingOrder);
-	}*/
-	
-	
+	}
+
+
 	//not implemented yet
 	@Override
 	protected boolean onTap(int index) {
@@ -116,12 +131,12 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 		      alert.show();
 
 		      return true; // we'll handle the event here (true) not pass to another overlay (false)
-*/
+		 */
 		return true;
 	}
-	
-	
-	
 
-	
+
+
+
+
 }

@@ -45,6 +45,7 @@ public class TeleportdActivity extends MapActivity {
 	/** Called when the activity is first created. */
 	TeleportdMapView mapView;
 	MapController mc;
+	
 	GeoPoint point; //user actual coordinate
 	LocationManager lm;
 	GridView gridview ;
@@ -159,6 +160,8 @@ public class TeleportdActivity extends MapActivity {
 	protected void onStart() {
 		super.onStart();
 		//locolizeMe();
+		Thumb.aggregation=(con.getResources().getDrawable(R.drawable.aggregation));
+		Thumb.pin=(con.getResources().getDrawable(R.drawable.pin));
 		backgroundTask=new TeleportdAPIParser(); //background task, fetch pictures and show them on the UI
 		backgroundTask.execute();
 	}
@@ -196,7 +199,7 @@ public class TeleportdActivity extends MapActivity {
 
 
 
-	public class TeleportdAPIParser extends AsyncTask<Void, Object, ArrayList<Thumb>> {
+	public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 		private HttpClient client; 
 		private HttpGet getRequest;
 		private String urlString;
@@ -235,7 +238,7 @@ public class TeleportdActivity extends MapActivity {
 			mapView=(MapView) findViewById(R.id.mapView);
 			con=getBaseContext();
 			Drawable drawable = getResources().getDrawable(R.drawable.pin);
-			marker = new Marker(drawable, con, mapGestureListener);
+			marker = new Marker(drawable, con, mapGestureListener,mapView);
 			mapOverlays = mapView.getOverlays();
 			adapter=new ImageAdapter();
 			gridview=(GridView) findViewById(R.id.gridView);
@@ -248,7 +251,7 @@ public class TeleportdActivity extends MapActivity {
 
 
 		@Override
-		protected  ArrayList<Thumb> doInBackground(Void... params) {
+		protected  Void doInBackground(Void... params) {
 			thumbs=new ArrayList<Thumb> ();
 			jsonFactory = new JsonFactory();
 
@@ -321,8 +324,7 @@ public class TeleportdActivity extends MapActivity {
 
 					}
 					thumbs.add(new Thumb(sha,thumb,new GeoPoint(lat,log)));
-					thumbs.get(thumbs.size()-1).aggregation=(con.getResources().getDrawable(R.drawable.aggregation));
-					thumbs.get(thumbs.size()-1).pin=(con.getResources().getDrawable(R.drawable.pin));
+					
 	
 
 				}
@@ -333,12 +335,16 @@ public class TeleportdActivity extends MapActivity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			consolidateOp();
+			
+			return null;
 
 
-			return consolidateOp();
+			
 		}
 
-		protected ArrayList<Thumb> consolidateOp()
+		protected void consolidateOp()
 		{
 			Rect visibleRect= new Rect();
 			ArrayList<Thumb> constructor = new ArrayList<Thumb> ();
@@ -378,7 +384,8 @@ public class TeleportdActivity extends MapActivity {
 				} 
 			}
 			Log.i("fetched images that fits in my mapview rect",((Integer) done.size()).toString());
-			return done;
+			consolidateOpDone(done);
+		
 
 		}
 
@@ -425,33 +432,29 @@ public class TeleportdActivity extends MapActivity {
 
 					for(Thumb pt:delPoints) {
 						marker.removeOverlay(pt);
-						//marker.poupulateMap();
-						//mapView.invalidate();
 					}
 					
 					for(Thumb a:done) {
 						marker.addOverlay(a);
-						//marker.poupulateMap();
-						//mapView.invalidate();
 					}
 				}
-				marker.poupulateMap();
-				mapView.invalidate();
 				
 				Log.i("annotations size",((Integer) annotations.size()).toString());
 			}
 
 		}
 
-
 		@Override
-		protected void onPostExecute(ArrayList<Thumb> result) {
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			Log.i("post", "post");
-			consolidateOpDone(result);			
+			
+			//marker.poupulateMap();
+			mapView.postInvalidate();
 			gridview.setAdapter(adapter);
-
 		}
+
+	
 
 	}
 
@@ -495,10 +498,13 @@ public class TeleportdActivity extends MapActivity {
 			break;
 		
 		case R.id.button4:
+			mapView.getController().animateTo(new GeoPoint(37773157, -122421684));
 			break;
 		
 		case R.id.button5:
-			((Marker)mapView.getOverlays().get(0)).addOverlay(new Thumb("zedz", "ezez", mapView.getMapCenter()));
+			mapView.invalidate();
+		
+			
 			
 			break;
 		
