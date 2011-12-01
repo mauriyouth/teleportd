@@ -39,13 +39,15 @@ public class TeleportdMapView extends MapView {
 
 	 
 	 int oldZoomLevel=-1;
-
+	 @Override
 	 public void dispatchDraw(Canvas canvas) {
-	  super.dispatchDraw(canvas);
+		 super.dispatchDraw(canvas);
+	  
 	  if (getZoomLevel() != oldZoomLevel) {
 		 zoomListener.zoomEvent();
 	   oldZoomLevel = getZoomLevel();
 	  }
+	 
 	 }
 	
 	

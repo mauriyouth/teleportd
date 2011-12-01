@@ -9,9 +9,11 @@ import android.widget.ImageView;
 
 public class ImageAdapter extends BaseAdapter {
     public ArrayList<String> URLS;
+    public ArrayList<String> sha;
 
     public ImageAdapter() {
     	URLS=new ArrayList<String>();
+    	sha=new ArrayList<String>();
     
     }
 
@@ -32,8 +34,7 @@ public class ImageAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {  // if it's not recycled, initialize some attributes
             imageView = new ImageView(parent.getContext());
-           //imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
-           imageView.setScaleType(ImageView.ScaleType.FIT_XY );
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY );
       
         } else {
             imageView = (ImageView) convertView;

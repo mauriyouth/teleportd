@@ -15,24 +15,16 @@ import com.google.android.maps.MapView;
 public class Marker extends ItemizedOverlay<Thumb>  {
 	private GestureDetector gd;
 	private ArrayList<Thumb> mOverlays = new ArrayList<Thumb>();
-
-	Drawable marker;
+	public static Drawable pin;
 	MapView mapView;
 
 
 
-	public Marker(Drawable defaultMarker) {
-		super(boundCenterBottom(defaultMarker));
-		marker=defaultMarker;
-		
 
-	}
 
-	public Marker(Drawable defaultMarker, Context context, GestureDetector.OnGestureListener listener,MapView mapView) {
-		super(boundCenterBottom(defaultMarker));
-		marker=defaultMarker;
+	public Marker( Context context, GestureDetector.OnGestureListener listener) {
+		super(boundCenterBottom(pin));
 		gd = new GestureDetector(context, listener);
-		this.mapView=mapView;
 		populate();
 	}
 
@@ -65,29 +57,27 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 
 
 	@Override
-	public  synchronized int size() {
+	public synchronized  int size() {
 
 		return this.mOverlays.size();
 	}
 
-	public  void addOverlay(Thumb overlay) {
+	public synchronized  void  addOverlay(Thumb overlay) {
 		mOverlays.add(overlay);
-		super.populate();
 
-
+		
 	}
 
-	public void removeOverlay(Thumb overlay){
+	public synchronized void removeOverlay(Thumb overlay){
 		mOverlays.remove(overlay);
-		super.populate();
-		setLastFocusedIndex(-1);
-
+	
+	
 	}
 
 	public void poupulateMap(){
-		super.populate();
 		setLastFocusedIndex(-1);
-
+		super.populate();
+		
 	}
 
 
@@ -103,7 +93,7 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 	}
 
 	@Override
-	protected synchronized int getIndexToDraw(int drawingOrder) {
+	protected  int getIndexToDraw(int drawingOrder) {
 		return super.getIndexToDraw(drawingOrder);
 	}
 
