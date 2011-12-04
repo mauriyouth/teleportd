@@ -1,6 +1,6 @@
 package teleportd.com.droid.map;
 
-import teleportd.com.droid.TeleportdActivity.OnGestureListenerTel;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -31,24 +31,25 @@ public class TeleportdMapView extends MapView {
 	public TeleportdMapView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	
 
-	 public TeleportdMapView(Context context, String apiKey) {
-	  super(context, apiKey);
-	 }
 
-	 
-	 int oldZoomLevel=-1;
-	 @Override
-	 public void dispatchDraw(Canvas canvas) {
-		 super.dispatchDraw(canvas);
-	  
-	  if (getZoomLevel() != oldZoomLevel) {
-		 zoomListener.zoomEvent();
-	   oldZoomLevel = getZoomLevel();
-	  }
-	 
-	 }
-	
-	
+	public TeleportdMapView(Context context, String apiKey) {
+		super(context, apiKey);
+	}
+
+
+	int oldZoomLevel=-1;
+	@Override
+	public void dispatchDraw(Canvas canvas) {
+		super.dispatchDraw(canvas);
+
+		if (getZoomLevel() != oldZoomLevel) {
+			zoomListener.zoomEvent();
+			oldZoomLevel = getZoomLevel();
+		}
+		super.dispatchDraw(canvas);
+
+	}
+
+
 }

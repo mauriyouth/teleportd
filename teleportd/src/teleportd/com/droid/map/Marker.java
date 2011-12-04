@@ -22,9 +22,10 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 
 
 
-	public Marker( Context context, GestureDetector.OnGestureListener listener) {
+	public Marker( Context context, OnGestureListenerTel listener) {
 		super(boundCenterBottom(pin));
 		gd = new GestureDetector(context, listener);
+		listener.marker=this;
 		populate();
 	}
 
@@ -38,7 +39,7 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 
 
 
-	public ArrayList<Thumb> getmOverlays() {
+	public  ArrayList<Thumb> getmOverlays() {
 		return mOverlays;
 	}
 
@@ -64,12 +65,12 @@ public class Marker extends ItemizedOverlay<Thumb>  {
 
 	public synchronized  void  addOverlay(Thumb overlay) {
 		mOverlays.add(overlay);
-
-		
 	}
 
 	public synchronized void removeOverlay(Thumb overlay){
 		mOverlays.remove(overlay);
+		setLastFocusedIndex(-1);
+		//super.populate();
 	
 	
 	}

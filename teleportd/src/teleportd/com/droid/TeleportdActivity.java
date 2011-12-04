@@ -1,10 +1,9 @@
 package teleportd.com.droid;
 
-
 import java.util.List;
-import java.util.Timer;
 import teleportd.com.droid.image.ImageAdapter;
 import teleportd.com.droid.map.Marker;
+import teleportd.com.droid.map.OnGestureListenerTel;
 import teleportd.com.droid.map.TeleportdMapView;
 import teleportd.com.droid.map.Thumb;
 import com.google.android.maps.GeoPoint;
@@ -18,8 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.GridView;
 
@@ -44,10 +41,8 @@ public class TeleportdActivity extends MapActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		mapGestureListener = new OnGestureListenerTel();
 		mapView = (TeleportdMapView) findViewById(R.id.mapView);
 		gridview=(GridView) findViewById(R.id.gridView);
-		mapView.setZoomListener(mapGestureListener);
 		mc = mapView.getController();
 		mapOverlays=mapView.getOverlays();
 		point = new GeoPoint(37768700 ,-122444900);
@@ -56,85 +51,8 @@ public class TeleportdActivity extends MapActivity {
 		mapView.setBuiltInZoomControls(true);
 		con=getBaseContext();
 		adapter= new ImageAdapter();
-
-	}
-	
-	
-	public class OnGestureListenerTel implements OnGestureListener {
-		Timer t = new Timer();
-		Boolean scheduledTask = false;
-		private long minTime = 300;
-		@Override
-		public boolean onSingleTapUp(MotionEvent e) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public void onShowPress(MotionEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {
-			Long dt =  e2.getEventTime() - e2.getDownTime();
-
-			//mapView.get
-			if(dt>minTime){
-				Log.i("long", dt.toString());
-				if(!scheduledTask){
-					t.schedule(new MyTimerTask(backgroundTask, handler, mapView, adapter, gridview,marker), 1000);
-					scheduledTask=true;
-					return false;
-				}
-
-				t.cancel();
-				t.purge();
-
-				t=new Timer();
-				t.schedule(new MyTimerTask(backgroundTask, handler, mapView, adapter, gridview,marker), 1000);
-				scheduledTask=true;
-			}
-			return false;
-		}
 		
-		public void zoomEvent(){
-			
-			if(!scheduledTask){
-				t.schedule(new MyTimerTask(backgroundTask, handler, mapView, adapter, gridview,marker), 1000);
-				scheduledTask=true;
-			}
-
-			t.cancel();
-			t.purge();
-
-			t=new Timer();
-			t.schedule(new MyTimerTask(backgroundTask, handler, mapView, adapter, gridview,marker), 1000);
-			scheduledTask=true;
-		}
-
-		@Override
-		public void onLongPress(MotionEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-				float velocityY) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean onDown(MotionEvent e) {
-			// TODO Auto-generated method stub
-			return false;
-		}
 	}
-
-	
 	
 	
 
@@ -145,7 +63,9 @@ public class TeleportdActivity extends MapActivity {
 		Thumb.aggregation=(con.getResources().getDrawable(R.drawable.aggregation));
 		Thumb.pin=(con.getResources().getDrawable(R.drawable.pin));
 		Marker.pin=(con.getResources().getDrawable(R.drawable.pin));
+		mapGestureListener = new OnGestureListenerTel(backgroundTask, handler, mapView, adapter, gridview);
 		marker=new Marker(con, mapGestureListener);
+		mapView.setZoomListener(mapGestureListener);
 		backgroundTask= new TeleportdAPIParser(mapView,adapter, gridview,marker); //background task, fetch pictures and show them on the UI
 		backgroundTask.execute();
 	}

@@ -64,20 +64,15 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 			request.append("%5D");
 			return request.toString(); 
 		}
-
+		
+		
 
 		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
+		protected  Void doInBackground(Void... params) {
 			client = new DefaultHttpClient();
 			thumbs=new ArrayList<Thumb> ();
 			jsonFactory = new JsonFactory();
 			mapOverlays=mapView.getOverlays();
-		}
-
-
-		@Override
-		protected  Void doInBackground(Void... params) {
 			Log.i("latitudespan,",((Integer)mapView.getLatitudeSpan()).toString());
 			Log.i("longitudespan,",((Integer)mapView.getLongitudeSpan()).toString());
 
@@ -93,45 +88,27 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 				int lat=0;
 
 				while(jp.nextValue()!=null){
-
+					
 					jp.nextValue();
 					while(jp.getCurrentToken()!=JsonToken.END_OBJECT && jp.getCurrentToken()!=null){
 
-						if(jp.getCurrentName().equals("sha")){
+						if("sha".equals(jp.getCurrentName())){
 							sha=jp.getText();
 							adapter.sha.add(sha);
 						}
 
-						if(jp.getCurrentName().equals("date")){
-							//tpi.date=jp.getIntValue();			
-						}
 
-						if(jp.getCurrentName().equals("age")){
-							//tpi.age=jp.getIntValue();
-						}
-
-
-						if(jp.getCurrentName().equals("thumb")){
+						if("thumb".equals(jp.getCurrentName())){
 							thumb=jp.getText();
 							adapter.URLS.add(jp.getText());
 						}
 
-
-						if(jp.getCurrentName().equals("rank")){
-							//tpi.rank=jp.getIntValue();
-						}
-
-						if(jp.getCurrentName().equals("grade")){
-							//tpi.grade=jp.getIntValue();
-						}
-
-						if(jp.getCurrentName().equals("loc")){
+						if("loc".equals(jp.getCurrentName())){
 							jp.nextValue().toString();
 							lat=(int) (jp.getFloatValue()*1E6);
 							jp.nextValue().toString();
 							log=(int) (jp.getFloatValue()*1E6);
 							jp.nextValue();
-							//publishProgress(new GeoPoint (tpi.loc[0],tpi.loc[1]));
 						}
 
 						jp.nextValue();	
@@ -146,7 +123,6 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 				client.getConnectionManager().shutdown();
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -204,7 +180,6 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 			Log.i("fetched images that fits in my mapview rect",((Integer) done.size()).toString());
 			consolidateOpDone(done);
 		
-		
 
 		}
 
@@ -216,7 +191,6 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 		
 			if(mapOverlays.size()==0){
 				marker.setmOverlays(done);
-				marker.poupulateMap();
 				mapOverlays.add(marker);
 				marker.poupulateMap();
 				ArrayList<Thumb> annotations=marker.getmOverlays();
@@ -239,7 +213,10 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 				Boolean found=false;
 				
 					//we check here if there's an overlayitem loaded in "done array" and already exist on the map
-					for(Thumb pt:annotations) {
+				synchronized (annotations) {
+					
+					
+				for(Thumb pt:annotations) {
 						found=false;
 						for(Iterator<Thumb> it=done.iterator(); it.hasNext();){
 							Thumb d=it.next();
@@ -258,6 +235,7 @@ public class TeleportdAPIParser extends AsyncTask<Void, Object, Void> {
 						}
 						
 					}
+				}
 					
 					int b=1;
 					for(Thumb pt:delPoints) {
